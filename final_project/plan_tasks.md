@@ -7,12 +7,12 @@ Hướng đồ án: **nghiên cứu** (có ablation study). Yêu cầu nộp bà
 
 Tên thành viên là placeholder, thay bằng tên thật sau.
 
-| Thành viên | Phần report/slide | Phần kỹ thuật (demo + ablation) | Paper |
-|---|---|---|---|
-| TV1 | Tổng quan + Group A | Làm chung với TV3 | CTC-WS |
-| TV3 | Group C | Làm chung với TV1 | CTC-WS |
-| TV2 | Group B (B1 + B2) | Làm chung với TV4 | CopyNE |
-| TV4 | Group D (D1 + D2) | Làm chung với TV2 | CopyNE |
+| Thành viên | Phần report/slide | Phần kỹ thuật (demo + ablation) |
+|---|---|---|
+| TV1 | Tổng quan + Group A | Làm chung với TV3 |
+| TV3 | Group C | Làm chung với TV1 |
+| TV2 | Group B (B1 + B2) | Làm chung với TV4 |
+| TV4 | Group D (D1 + D2) | Làm chung với TV2 |
 
 - Mỗi người đọc 1-3 paper uy tín, milestone hoặc mới nhất của group mình, rồi viết phần report và slide tương ứng.
 - Mỗi cặp (TV1+TV3, TV2+TV4) cùng làm **cả demo lẫn ablation** trên một paper của cặp mình. Trong cặp, làm tuần tự: dựng môi trường và chạy demo trước, rồi dùng lại chính môi trường đó để chạy ablation. Hai người chia nhau các cấu hình ablation để chạy song song.
