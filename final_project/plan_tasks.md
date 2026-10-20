@@ -18,9 +18,9 @@ Tên thành viên là placeholder, thay bằng tên thật sau.
 - Nhóm demo làm trước để dựng môi trường. Nhóm ablation dùng lại môi trường đó để chạy ablation.
 - Phần phân tích chuyên sâu và đề xuất cải tiến làm chung cả nhóm.
 
-## 2. Hai paper đề xuất để demo và ablation
+## 2. Hai paper được chọn để demo và ablation
 
-Điều kiện chọn: thuộc Group B hoặc C, có public source code, chạy được trên Google Colab / Kaggle free (T4, khoảng 16 GB VRAM).
+Chỉ dùng **CTC-WS** và **CopyNE** để chạy demo và ablation. Điều kiện chọn: thuộc Group B hoặc C, có public source code, chạy được trên Google Colab / Kaggle free (T4, khoảng 16 GB VRAM).
 
 | | Paper 1: CTC-based Word Spotter (CTC-WS) | Paper 2: CopyNE |
 |---|---|---|
@@ -40,16 +40,13 @@ Tên thành viên là placeholder, thay bằng tên thật sau.
 - AISHELL-1 nặng (khoảng 15 GB), cần lưu trên Drive/Kaggle Dataset để khỏi tải lại mỗi phiên.
 - Giới hạn Colab free: phiên tối đa vài giờ và có thể ngắt; cần lưu checkpoint và kết quả ra Drive thường xuyên. Kaggle free có giới hạn giờ GPU mỗi tuần.
 
-**Phương án dự phòng nếu M0 thất bại:**
-- Thay CopyNE bằng TCPGen-Whisper ([WhisperBiasing](https://github.com/BriansIDP/WhisperBiasing)) hoặc CTC-Assisted LLM (SLAM-LLM, cần lượng tử hóa 4-bit cho Vicuna-7B và có thể dùng Kaggle 2×T4).
-- Hai phương án này nặng hơn nên chỉ dùng khi CopyNE không chạy được.
-- Nếu cả hai thất bại: dùng sherpa-onnx hotwords (Group A, chạy CPU).
+**Nếu M0 gặp vấn đề:** không đổi sang paper khác. Nhóm xử lý lỗi môi trường ngay trong M0-M1 (đổi phiên bản thư viện, chuyển giữa Colab và Kaggle, chạy trên tập con nhỏ hơn). Phạm vi ablation có thể thu hẹp, nhưng vẫn chỉ dùng hai paper này.
 
 ## 3. Milestone
 
 | # | Hạn | Mục tiêu | Sản phẩm / tiêu chí xong |
 |---|---|---|---|
-| **M0** | 20/10 – 23/10 | Khởi động và kiểm tra khả thi | Tạo folder `report/`, `slides/`, `code/`, `data/`, `video/`. TV1 chạy được tutorial CTC-WS trên Colab; TV2 tải được checkpoint CopyNE và chạy được `evaluate` trên vài câu. **Cuối 23/10 quyết định giữ hoặc đổi paper** |
+| **M0** | 20/10 – 23/10 | Khởi động và kiểm tra khả thi | Tạo folder `report/`, `slides/`, `code/`, `data/`, `video/`. TV1 chạy được tutorial CTC-WS trên Colab; TV2 tải được checkpoint CopyNE và chạy được `evaluate` trên vài câu. **Cuối 23/10 đánh giá tiến độ setup; nếu còn vướng thì ưu tiên gỡ lỗi, không đổi paper** |
 | **M1** | 24/10 – 27/10 | Đọc paper và dựng môi trường | Mỗi người có ghi chú cho 1-3 paper của group (tóm tắt, ưu/nhược điểm). Demo chạy baseline trên tập test nhỏ. Notebook setup commit vào `code/` kèm hướng dẫn chạy lại |
 | **M2** | 28/10 – 1/11 | Demo hoàn chỉnh; chốt thiết kế ablation | Demo chạy đủ trên tập test, có số liệu baseline và `README` chạy lại được. Nhóm ablation chạy lại setup độc lập để xác nhận. Tài liệu thiết kế ablation (biến số, giá trị, metric) được hai người của cặp thống nhất. Bản nháp report/slide phần group của mỗi người |
 | **M3** | 2/11 – 8/11 | Chạy ablation | Bảng kết quả ablation cho cả hai paper, lưu notebook và log. Báo cáo ngắn về những điều bất thường |
@@ -59,7 +56,7 @@ Tên thành viên là placeholder, thay bằng tên thật sau.
 
 Ghi chú:
 - Hai nhóm làm lệch nhau: nhóm ablation bắt đầu từ M2 (xác nhận setup), chạy chính ở M3.
-- Mốc M0 là cổng quyết định. Nếu đến 23/10 một trong hai paper chưa chạy được thì chuyển sang phương án dự phòng ngay, không kéo sang M1.
+- Mốc M0 là cổng kiểm tra. Nếu đến 23/10 một trong hai paper chưa chạy được, tiếp tục gỡ lỗi sang M1 và thu hẹp phạm vi ablation nếu cần, không thay paper.
 
 ## 4. Gợi ý paper đọc cho từng group
 
