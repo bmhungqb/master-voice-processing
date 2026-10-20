@@ -39,19 +39,19 @@ Dự án được phân chia theo 4 vai trò thành viên cốt lõi:
 
 ## 3. Chi Tiết Kết Quả Nhiệm Vụ 1 (Task 1 Deliverables)
 
-* **Dữ liệu nguồn:** [`data/trong_gia_dinh.epub`](data/trong_gia_dinh.epub) (23 chương từ `C0.html` đến `C22.html`).
+* **Dữ liệu nguồn:** [`midterm/data/trong_gia_dinh.epub`](midterm/data/trong_gia_dinh.epub) (23 chương từ `C0.html` đến `C22.html`).
 * **Kết quả xử lý:** Toàn bộ **23 chương** đã được trích xuất, chuẩn hóa, phân tách câu và tạo tài liệu DTBook XML đạt chuẩn 100%.
   * **Tổng số đoạn văn (`<p>`):** 3,188 đoạn.
   * **Tổng số câu (`<sent>`):** 8,859 câu.
   * **Kiểm thử DTD & XML Syntax:** 23/23 chương **PASSED**.
-* **Dữ liệu đầu ra bàn giao (Handoff Artifacts):** Nằm tại thư mục [`results/task1/`](results/task1/), gồm thư mục `Trong_Gia_Dinh-Gioi_Thieu/` và 22 chương `Trong_Gia_Dinh-Chuong_01/` đến `Trong_Gia_Dinh-Chuong_22/`:
+* **Dữ liệu đầu ra bàn giao (Handoff Artifacts):** Nằm tại thư mục [`midterm/results/task1/`](midterm/results/task1/), gồm thư mục `Trong_Gia_Dinh-Gioi_Thieu/` và 22 chương `Trong_Gia_Dinh-Chuong_01/` đến `Trong_Gia_Dinh-Chuong_22/`:
   1. `dtbook.xml`: Tệp XML chuẩn DAISY 3 (DTBook 2005-3) với đầy đủ siêu dữ liệu và neo đồng bộ ID.
   2. `segments.json`: Tệp dữ liệu trung gian có cấu trúc phẳng (`sent_id`, `smil_sid`, `p_id`, `seq_id`, `text`) phục vụ trực tiếp cho Thành viên 2 (TTS) và Thành viên 3 (SMIL Alignment).
 
 ---
 ## 4. Trạng Thái Nhiệm Vụ 2 (Task 2 – TTS & Audio)
 
-* **Dữ liệu đầu vào:** Đọc trực tiếp `segments.json` từ [`results/task1/`](results/task1/); toàn bộ output Task 1 được giữ nguyên và chỉ sử dụng ở chế độ read-only.
+* **Dữ liệu đầu vào:** Đọc trực tiếp `segments.json` từ [`midterm/results/task1/`](midterm/results/task1/); toàn bộ output Task 1 được giữ nguyên và chỉ sử dụng ở chế độ read-only.
 * **TTS Engine:** VieNeu `Minh Đức`, backend ONNX, audio MP3 `128 kbps`.
 * **Xử lý ngữ cảnh:** Các câu liên tiếp cùng `p_id` được gom thành context chunk, tối đa **12 câu / 900 ký tự**; không ghép qua hai paragraph.
 * **Ngắt nghỉ:** Dấu câu bên trong context do VieNeu xử lý tự nhiên; pipeline chỉ ghép pause cấu trúc giữa context chunk, paragraph và scene break.
@@ -65,9 +65,9 @@ Dự án được phân chia theo 4 vai trò thành viên cốt lõi:
 ## 4.1. Trạng Thái Nhiệm Vụ 3 (Task 3 – Alignment & DAISY)
 
 * **Pilot đã dựng gói:** Giới thiệu (41 câu, 34 câu CTC) và Chương 1 (250 câu, 184 câu CTC). `validate_task3.py --pilot` **PASSED**.
-* **Mỗi chương là một cuốn DAISY riêng** trong `results/task3/`, vì `id` và `mo0.smil` khởi tạo lại theo thư mục. Gói gồm `dtbook.xml`, file MP3, `mo0.smil`, `book.opf`, `navigation.ncx`, `resources.res`.
+* **Mỗi chương là một cuốn DAISY riêng** trong `midterm/results/task3/`, vì `id` và `mo0.smil` khởi tạo lại theo thư mục. Gói gồm `dtbook.xml`, file MP3, `mo0.smil`, `book.opf`, `navigation.ncx`, `resources.res`.
 * **Clip liền mạch:** khoảng nghỉ Task 2 đã trộn vào audio được giữ trong clip của câu cuối mỗi chunk, nên trình đọc không nhảy cóc qua khoảng lặng.
-* **Chương 2–22:** chưa có audio. `python src/daisy/run_task3.py --all` sẽ chạy được khi Task 2 giao đủ file.
+* **Chương 2–22:** chưa có audio. `python midterm/src/daisy/run_task3.py --all` sẽ chạy được khi Task 2 giao đủ file.
 
 ## 5. Cấu Trúc Thư Mục Dự Án (Repository Structure)
 
@@ -76,51 +76,52 @@ Dự án được phân chia theo 4 vai trò thành viên cốt lõi:
 ├── README.md               # Tổng quan dự án, phân công nhiệm vụ và trạng thái
 ├── agent.md                # Quy chuẩn kiến trúc & hướng dẫn dành cho AI Agent Coding
 ├── .gitignore              # Cấu hình bỏ qua cache Python và hệ điều hành
-├── data/                   # Thư mục chứa dữ liệu đầu vào
-│   └── trong_gia_dinh.epub # Tệp sách điện tử gốc đầu vào
-├── src/                    # Toàn bộ mã nguồn xử lý pipeline
-│   ├── config.py           # Cấu hình, siêu dữ liệu sách và đường dẫn dùng chung
-│   ├── extract_clean.py    # (Task 1) Trích xuất EPUB, làm sạch và tách câu tiếng Việt
-│   ├── generate_dtbook.py  # (Task 1) Sinh tài liệu DTBook XML 2005-3 chuẩn NISO
-│   ├── validate_dtbook.py  # (Task 1) Kiểm thử cú pháp XML, tính duy nhất ID và DTD
-│   ├── run_task1.py        # (Task 1) Script thực thi pipeline chính
-│   ├── tts/                # (Task 2) Pipeline TTS & Audio
-│   │   ├── __init__.py
-│   │   ├── normalize.py    # Chuẩn hóa text riêng cho TTS
-│   │   ├── synthesize.py   # Sinh audio bằng VieNeu theo context chunk
-│   │   ├── run_task2.py    # Script thực thi pipeline Task 2
-│   │   ├── validate_task2.py # Kiểm tra audio, metadata và tính toàn vẹn dữ liệu
-│   │   ├── requirements.txt  # Thư viện phụ thuộc của Task 2
-│   │   └── README.md       # Mô tả chi tiết pipeline Task 2
-│   └── daisy/              # (Task 3) Căn chỉnh câu và đóng gói DAISY 3
-│       ├── align.py
-│       ├── clips.py
-│       ├── build.py
-│       ├── run_task3.py
-│       ├── validate_task3.py
-│       ├── requirements.txt
-│       └── README.md
-└── results/                # Thư mục chứa kết quả của các nhiệm vụ
-    ├── task1/              # Kết quả Task 1: 23 chương sách DAISY 3
-    │   ├── Trong_Gia_Dinh-Gioi_Thieu/
-    │   │   ├── dtbook.xml
-    │   │   └── segments.json
-    │   ├── Trong_Gia_Dinh-Chuong_01/
-    │   │   ├── dtbook.xml
-    │   │   └── segments.json
-    │   └── ... (đến Chương 22)
-    ├── task2/              # Kết quả Task 2: audio và metadata thời gian
-    │   ├── Trong_Gia_Dinh-Gioi_Thieu/
-    │   │   ├── Gioi_Thieu.mp3
-    │   │   └── timestamps.json
-    │   ├── Trong_Gia_Dinh-Chuong_01/
-    │   │   ├── Chuong_01.mp3
-    │   │   └── timestamps.json
-    │   └── ... (các chương đã xử lý)
-    └── task3/              # Kết quả Task 3: gói DAISY 3 theo chương
-        ├── Trong_Gia_Dinh-Gioi_Thieu/
-        ├── Trong_Gia_Dinh-Chuong_01/
-        └── ... (các chương đã có audio Task 2)
+└── midterm/
+    ├── data/                   # Thư mục chứa dữ liệu đầu vào
+    │   └── trong_gia_dinh.epub # Tệp sách điện tử gốc đầu vào
+    ├── src/                    # Toàn bộ mã nguồn xử lý pipeline
+    │   ├── config.py           # Cấu hình, siêu dữ liệu sách và đường dẫn dùng chung
+    │   ├── extract_clean.py    # (Task 1) Trích xuất EPUB, làm sạch và tách câu tiếng Việt
+    │   ├── generate_dtbook.py  # (Task 1) Sinh tài liệu DTBook XML 2005-3 chuẩn NISO
+    │   ├── validate_dtbook.py  # (Task 1) Kiểm thử cú pháp XML, tính duy nhất ID và DTD
+    │   ├── run_task1.py        # (Task 1) Script thực thi pipeline chính
+    │   ├── tts/                # (Task 2) Pipeline TTS & Audio
+    │   │   ├── __init__.py
+    │   │   ├── normalize.py    # Chuẩn hóa text riêng cho TTS
+    │   │   ├── synthesize.py   # Sinh audio bằng VieNeu theo context chunk
+    │   │   ├── run_task2.py    # Script thực thi pipeline Task 2
+    │   │   ├── validate_task2.py # Kiểm tra audio, metadata và tính toàn vẹn dữ liệu
+    │   │   ├── requirements.txt  # Thư viện phụ thuộc của Task 2
+    │   │   └── README.md       # Mô tả chi tiết pipeline Task 2
+    │   └── daisy/              # (Task 3) Căn chỉnh câu và đóng gói DAISY 3
+    │       ├── align.py
+    │       ├── clips.py
+    │       ├── build.py
+    │       ├── run_task3.py
+    │       ├── validate_task3.py
+    │       ├── requirements.txt
+    │       └── README.md
+    └── results/                # Thư mục chứa kết quả của các nhiệm vụ
+        ├── task1/              # Kết quả Task 1: 23 chương sách DAISY 3
+        │   ├── Trong_Gia_Dinh-Gioi_Thieu/
+        │   │   ├── dtbook.xml
+        │   │   └── segments.json
+        │   ├── Trong_Gia_Dinh-Chuong_01/
+        │   │   ├── dtbook.xml
+        │   │   └── segments.json
+        │   └── ... (đến Chương 22)
+        ├── task2/              # Kết quả Task 2: audio và metadata thời gian
+        │   ├── Trong_Gia_Dinh-Gioi_Thieu/
+        │   │   ├── Gioi_Thieu.mp3
+        │   │   └── timestamps.json
+        │   ├── Trong_Gia_Dinh-Chuong_01/
+        │   │   ├── Chuong_01.mp3
+        │   │   └── timestamps.json
+        │   └── ... (các chương đã xử lý)
+        └── task3/              # Kết quả Task 3: gói DAISY 3 theo chương
+            ├── Trong_Gia_Dinh-Gioi_Thieu/
+            ├── Trong_Gia_Dinh-Chuong_01/
+            └── ... (các chương đã có audio Task 2)
 ```
 ## 6. Hướng Dẫn Chạy Pipeline
 
@@ -131,34 +132,34 @@ Yêu cầu môi trường: Python 3.9+ và thư viện `beautifulsoup4`.
 pip install beautifulsoup4
 
 # 1. Chạy thử nghiệm pilot (Chương 0 - Giới thiệu và Chương 1)
-python3 src/run_task1.py --pilot
+python3 midterm/src/run_task1.py --pilot
 
 # 2. Chạy toàn bộ 23 chương của cuốn sách
-python3 src/run_task1.py --all
+python3 midterm/src/run_task1.py --all
 
 # 3. Chạy xử lý một chương cụ thể (ví dụ chương 5)
-python3 src/run_task1.py --chapter 5
+python3 midterm/src/run_task1.py --chapter 5
 ```
 ### Task 2 – TTS & Audio
 
 ```bash
 # Cài đặt thư viện phụ thuộc (nếu chưa có)
-python -m pip install -r src/tts/requirements.txt
+python -m pip install -r midterm/src/tts/requirements.txt
 
 # 1. Chạy thử nghiệm pilot (Chương 0 - Giới thiệu và Chương 1)
-python src/tts/run_task2.py --pilot
+python midterm/src/tts/run_task2.py --pilot
 
 # 2. Chạy toàn bộ 23 chương của cuốn sách
-python src/tts/run_task2.py --all
+python midterm/src/tts/run_task2.py --all
 
 # 3. Chạy xử lý một chương cụ thể (ví dụ chương 5)
-python src/tts/run_task2.py --chapter 5
+python midterm/src/tts/run_task2.py --chapter 5
 
 # 4. Kiểm tra kết quả pilot
-python src/tts/validate_task2.py --pilot
+python midterm/src/tts/validate_task2.py --pilot
 
 # 5. Kiểm tra một chương cụ thể
-python src/tts/validate_task2.py --chapter 5
+python midterm/src/tts/validate_task2.py --chapter 5
 ```
 
 ### Task 3 – Alignment & DAISY package
@@ -168,11 +169,11 @@ Cần ffmpeg trên `PATH`. Căn CTC dùng Python 3.12 vì wheel `torch` chưa c�
 ```bash
 py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-.venv\Scripts\python -m pip install -r src/daisy/requirements.txt
+.venv\Scripts\python -m pip install -r midterm/src/daisy/requirements.txt
 
-.venv\Scripts\python src/daisy/run_task3.py --pilot
-.venv\Scripts\python src/daisy/validate_task3.py --pilot
+.venv\Scripts\python midterm/src/daisy/run_task3.py --pilot
+.venv\Scripts\python midterm/src/daisy/validate_task3.py --pilot
 
-.venv\Scripts\python src/daisy/run_task3.py --chapter 5
-.venv\Scripts\python src/daisy/run_task3.py --all
+.venv\Scripts\python midterm/src/daisy/run_task3.py --chapter 5
+.venv\Scripts\python midterm/src/daisy/run_task3.py --all
 ```

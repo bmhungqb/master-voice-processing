@@ -2,11 +2,11 @@
 
 Pipeline:
 
-`results/task1/*/segments.json -> TTS-only normalize -> VieNeu context synthesis -> chapter MP3 + timestamps.json -> validate -> Task 3`
+`midterm/results/task1/*/segments.json -> TTS-only normalize -> VieNeu context synthesis -> chapter MP3 + timestamps.json -> validate -> Task 3`
 
 ## Configuration
 
-Task 2 uses the shared `src/config.py`.
+Task 2 uses the shared `midterm/src/config.py`.
 
 Production defaults:
 
@@ -27,7 +27,7 @@ Punctuation inside a context chunk is handled natively by VieNeu.
 ## Install
 
 ```bash
-python -m pip install -r src/tts/requirements.txt
+python -m pip install -r midterm/src/tts/requirements.txt
 ffmpeg -version
 ffprobe -version
 ```
@@ -35,8 +35,8 @@ ffprobe -version
 ## Pilot first
 
 ```bash
-python src/tts/run_task2.py --pilot
-python src/tts/validate_task2.py --pilot
+python midterm/src/tts/run_task2.py --pilot
+python midterm/src/tts/validate_task2.py --pilot
 ```
 
 Listen to the complete Introduction and Chapter 1 before running more chapters.
@@ -44,21 +44,21 @@ Listen to the complete Introduction and Chapter 1 before running more chapters.
 Single chapter:
 
 ```bash
-python src/tts/run_task2.py --chapter 5
-python src/tts/validate_task2.py --chapter 5
+python midterm/src/tts/run_task2.py --chapter 5
+python midterm/src/tts/validate_task2.py --chapter 5
 ```
 
 Full run is kept for the final production dataset:
 
 ```bash
-python src/tts/run_task2.py --all
-python src/tts/validate_task2.py --all
+python midterm/src/tts/run_task2.py --all
+python midterm/src/tts/validate_task2.py --all
 ```
 
 ## Output
 
 ```text
-results/task2/Trong_Gia_Dinh-Chuong_XX/
+midterm/results/task2/Trong_Gia_Dinh-Chuong_XX/
 ├── Chuong_XX.mp3
 └── timestamps.json
 ```
@@ -69,4 +69,4 @@ The Introduction uses `Gioi_Thieu.mp3`.
 
 ## Task-1 safety
 
-Task 2 reads Task-1 `segments.json` only. It never writes into `results/task1/`. The runner also verifies the SHA-256 of each source `segments.json` before and after synthesis.
+Task 2 reads Task-1 `segments.json` only. It never writes into `midterm/results/task1/`. The runner also verifies the SHA-256 of each source `segments.json` before and after synthesis.
