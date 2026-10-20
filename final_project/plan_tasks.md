@@ -15,36 +15,39 @@ Tên thành viên là placeholder, thay bằng tên thật sau.
 | TV4 | Group D (D1 + D2) | **Ablation** (làm chung với TV3) |
 
 - Mỗi người đọc 1-3 paper uy tín, milestone hoặc mới nhất của group mình, rồi viết phần report và slide tương ứng.
-- Mỗi cặp chỉ làm **một** việc: cặp TV1+TV2 chạy demo, cặp TV3+TV4 làm ablation. Cả hai việc đều trên **cùng một paper** (mục 2).
+- Mỗi cặp chỉ làm **một** việc: cặp TV1+TV2 chạy demo, cặp TV3+TV4 làm ablation. Cả hai việc đều trên **cùng một paper**, chọn từ hai ứng viên ở mục 2 (nhóm tự thống nhất).
 - Cặp demo làm trước để dựng môi trường. Cặp ablation dùng lại môi trường đó để chạy ablation.
 - Phần phân tích chuyên sâu và đề xuất cải tiến làm chung cả nhóm.
 
-## 2. Paper được chọn để demo và ablation
+## 2. Hai paper ứng viên để demo và ablation
 
-Chỉ chọn **một** paper: **CTC-based Word Spotter (CTC-WS)**. Điều kiện chọn: thuộc Group B hoặc C, có public source code, chạy được trên Google Colab / Kaggle free (T4, khoảng 16 GB VRAM).
+Chỉ **một** trong hai paper dưới đây được dùng cho demo và ablation: **CTC-WS** hoặc **CopyNE**. Nhóm tự thống nhất lựa chọn (xem M0). Điều kiện đã lọc: thuộc Group B hoặc C, có public source code, chạy được trên Google Colab / Kaggle free (T4, khoảng 16 GB VRAM).
 
-| | CTC-WS |
-|---|---|
-| Group | C (Post-recognition Correction) |
-| Venue | Interspeech 2024, pp. 757-761 |
-| Code | Official trong [NeMo](https://github.com/NVIDIA/NeMo) (Apache-2.0); tutorial `ASR_Context_Biasing.ipynb` |
-| Vì sao hợp T4 free | Không cần train, chỉ inference; model FastConformer cỡ vài trăm triệu tham số |
-| Dữ liệu | LibriSpeech test (English) + rare-word list từ [is21_deep_bias](https://github.com/facebookresearch/fbai-speech/tree/master/is21_deep_bias) |
-| Ablation dự kiến | `context_score`, `beam_threshold`, `ctc_ali_token_weight`; kích thước bias list (100/500/1000 distractors); thêm hoặc bớt spelling variants; bật/tắt CTC-WS |
-| Metric | WER, B-WER/U-WER, phrase precision/recall/F1, false alarm |
+| | Ứng viên 1: CTC-based Word Spotter (CTC-WS) | Ứng viên 2: CopyNE |
+|---|---|---|
+| Group | C (Post-recognition Correction) | B1 (Dedicated Biasing Modules) |
+| Venue | Interspeech 2024, pp. 757-761 | ACL 2024 (A\*), pp. 2675-2686 |
+| Code | Official trong [NeMo](https://github.com/NVIDIA/NeMo) (Apache-2.0); tutorial `ASR_Context_Biasing.ipynb` | [zsLin177/CopyNE](https://github.com/zsLin177/CopyNE); README có checkpoint trên Google Drive và demo Gradio; license chưa ghi |
+| Vì sao hợp T4 free | Không cần train, chỉ inference; model FastConformer cỡ vài trăm triệu tham số | Chỉ cần evaluate với checkpoint có sẵn; README dùng 1 GPU cho evaluate |
+| Dữ liệu | LibriSpeech test (English) + rare-word list từ [is21_deep_bias](https://github.com/facebookresearch/fbai-speech/tree/master/is21_deep_bias) | AISHELL-1 (Mandarin) + NE dictionary từ repo |
+| Ablation dự kiến | `context_score`, `beam_threshold`, `ctc_ali_token_weight`; kích thước bias list (100/500/1000 distractors); thêm hoặc bớt spelling variants; bật/tắt CTC-WS | Kích thước dictionary (số distractors); các tham số của copy-attention decoding (xác định sau khi đọc code); bật/tắt copy so với decode thường |
+| Metric | WER, B-WER/U-WER, phrase precision/recall/F1, false alarm | CER, NE-CER |
 
 **Rủi ro đã biết:**
-- Chưa xác nhận tutorial `ASR_Context_Biasing.ipynb` chạy được trên Colab. Việc này kiểm tra ở M0.
+- Chưa mở link Google Drive của checkpoint CopyNE và chưa xác nhận tutorial `ASR_Context_Biasing.ipynb` chạy được trên Colab. Việc này kiểm tra ở M0.
 - CTC-WS chỉ chạy offline (không streaming) và cần model hybrid Transducer-CTC hoặc CTC; không dùng được với mọi model NeMo.
+- CopyNE là tiếng Trung. Train cần 4 GPU; với T4 free, ablation chỉ ở mức inference, không train lại.
+- Repo CopyNE: README không nêu tên framework hay license, cần đọc code.
+- AISHELL-1 nặng (khoảng 15 GB), cần lưu trên Drive/Kaggle Dataset để khỏi tải lại mỗi phiên.
 - Giới hạn Colab free: phiên tối đa vài giờ và có thể ngắt; cần lưu kết quả ra Drive thường xuyên. Kaggle free có giới hạn giờ GPU mỗi tuần.
 
-**Nếu M0 gặp vấn đề:** không đổi paper. Xử lý lỗi môi trường ngay trong M0-M1 (đổi phiên bản thư viện, chuyển giữa Colab và Kaggle, chạy trên tập con nhỏ hơn). Phạm vi ablation có thể thu hẹp.
+**Nếu M0 gặp vấn đề:** không đổi sang paper ngoài hai ứng viên. Xử lý lỗi môi trường ngay trong M0-M1 (đổi phiên bản thư viện, chuyển giữa Colab và Kaggle, chạy trên tập con nhỏ hơn) hoặc chọn ứng viên còn lại. Phạm vi ablation có thể thu hẹp.
 
 ## 3. Milestone
 
 | # | Hạn | Mục tiêu | Sản phẩm / tiêu chí xong |
 |---|---|---|---|
-| **M0** | 20/10 – 23/10 | Khởi động và kiểm tra khả thi | Tạo folder `report/`, `slides/`, `code/`, `data/`, `video/`. Cặp demo (TV1+TV2) chạy được tutorial CTC-WS trên Colab với vài câu. **Cuối 23/10 đánh giá tiến độ setup; nếu còn vướng thì ưu tiên gỡ lỗi, không đổi paper** |
+| **M0** | 20/10 – 23/10 | Khởi động và kiểm tra khả thi | Tạo folder `report/`, `slides/`, `code/`, `data/`, `video/`. Cặp demo (TV1+TV2) thử chạy cả hai ứng viên: tutorial CTC-WS trên Colab, và tải checkpoint CopyNE + chạy `evaluate` trên vài câu. **Cuối 23/10 nhóm thống nhất chọn một paper** dựa trên kết quả thử |
 | **M1** | 24/10 – 27/10 | Đọc paper và dựng môi trường | Mỗi người có ghi chú cho 1-3 paper của group (tóm tắt, ưu/nhược điểm). Demo chạy baseline trên tập test nhỏ. Notebook setup commit vào `code/` kèm hướng dẫn chạy lại |
 | **M2** | 28/10 – 1/11 | Demo hoàn chỉnh; chốt thiết kế ablation | Demo chạy đủ trên tập test, có số liệu baseline và `README` chạy lại được. Cặp ablation (TV3+TV4) chạy lại setup độc lập để xác nhận. Tài liệu thiết kế ablation (biến số, giá trị, metric) thống nhất giữa hai cặp. Bản nháp report/slide phần group của mỗi người |
 | **M3** | 2/11 – 8/11 | Chạy ablation | Bảng kết quả ablation, lưu notebook và log. Báo cáo ngắn về những điều bất thường |
@@ -54,7 +57,7 @@ Chỉ chọn **một** paper: **CTC-based Word Spotter (CTC-WS)**. Điều kiệ
 
 Ghi chú:
 - Cặp ablation bắt đầu từ M2 (xác nhận setup), chạy chính ở M3.
-- Mốc M0 là cổng kiểm tra. Nếu đến 23/10 CTC-WS chưa chạy được, tiếp tục gỡ lỗi sang M1 và thu hẹp phạm vi ablation nếu cần.
+- Mốc M0 là cổng kiểm tra. Thời điểm chốt paper (23/10) do nhóm tự quyết định; nên chốt trước M1 để cặp ablation không bị chậm.
 
 ## 4. Gợi ý paper đọc cho từng group
 
@@ -74,8 +77,8 @@ Tổng cộng có ít nhất 10 paper đủ ngưỡng A/A\*/Q1 nếu mỗi ngư�
 | Tỉ trọng | Tiêu chí | Ai phụ trách | Hoàn thành ở |
 |---|---|---|---|
 | 30% | Khảo sát ≥ 5 paper, tóm tắt, ưu/nhược điểm | TV1-TV4 (mỗi người một group) | M1, M2 (bản nháp), M4 (ghép) |
-| 20% | Chạy demo (CTC-WS) | TV1 + TV2 | M2 |
-| 30% | Ablation study (CTC-WS) | TV3 + TV4 | M3 |
+| 20% | Chạy demo (paper được chọn) | TV1 + TV2 | M2 |
+| 30% | Ablation study (paper được chọn) | TV3 + TV4 | M3 |
 | 20% | Phân tích chuyên sâu 1 giải pháp + đề xuất cải tiến | Cả nhóm | M4 |
 
 ## 6. Cấu trúc folder nộp
@@ -86,7 +89,7 @@ final_project/
 ├── slides/            # slide PDF
 ├── video/             # video 10-15 phút
 ├── code/
-│   └── ctc_ws/        # notebook demo + ablation
+│   └── <paper>/       # notebook demo + ablation của paper được chọn (ctc_ws hoặc copyne)
 ├── data/              # hoặc link tải (dữ liệu lớn để trên Drive/Kaggle)
 └── README.md          # hướng dẫn chạy lại
 ```
