@@ -7,15 +7,15 @@ Hướng đồ án: **nghiên cứu** (có ablation study). Yêu cầu nộp bà
 
 Tên thành viên là placeholder, thay bằng tên thật sau.
 
-| Thành viên | Phần report/slide | Vai trò kỹ thuật | Paper kỹ thuật |
+| Thành viên | Phần report/slide | Phần kỹ thuật (demo + ablation) | Paper |
 |---|---|---|---|
-| TV1 | Tổng quan + Group A | **Demo** | CTC-WS (setup NeMo) |
-| TV2 | Group B (B1 + B2) | **Demo** | CopyNE |
-| TV3 | Group C | **Ablation** (làm sau TV1) | CTC-WS |
-| TV4 | Group D (D1 + D2) | **Ablation** (làm sau TV2) | CopyNE |
+| TV1 | Tổng quan + Group A | Làm chung với TV3 | CTC-WS |
+| TV3 | Group C | Làm chung với TV1 | CTC-WS |
+| TV2 | Group B (B1 + B2) | Làm chung với TV4 | CopyNE |
+| TV4 | Group D (D1 + D2) | Làm chung với TV2 | CopyNE |
 
 - Mỗi người đọc 1-3 paper uy tín, milestone hoặc mới nhất của group mình, rồi viết phần report và slide tương ứng.
-- Nhóm demo làm trước để dựng môi trường. Nhóm ablation dùng lại môi trường đó để chạy ablation.
+- Mỗi cặp (TV1+TV3, TV2+TV4) cùng làm **cả demo lẫn ablation** trên một paper của cặp mình. Trong cặp, làm tuần tự: dựng môi trường và chạy demo trước, rồi dùng lại chính môi trường đó để chạy ablation. Hai người chia nhau các cấu hình ablation để chạy song song.
 - Phần phân tích chuyên sâu và đề xuất cải tiến làm chung cả nhóm.
 
 ## 2. Hai paper được chọn để demo và ablation
@@ -34,7 +34,7 @@ Chỉ dùng **CTC-WS** và **CopyNE** để chạy demo và ablation. Điều ki
 
 **Rủi ro đã biết:**
 - Chưa mở link Google Drive của checkpoint CopyNE và chưa xác nhận tutorial `ASR_Context_Biasing.ipynb` chạy được trên Colab. Việc này kiểm tra ở M0.
-- CopyNE là tiếng Trung. Setup của hai paper khác nhau, nên "dùng lại setup" chỉ áp dụng cho từng cặp (TV1→TV3, TV2→TV4).
+- CopyNE là tiếng Trung. Setup của hai paper khác nhau, nên mỗi cặp tự dựng và dùng lại setup của riêng mình.
 - CopyNE train cần 4 GPU. Với T4 free, ablation chỉ ở mức inference, không train lại.
 - Repo CopyNE, README không nêu tên framework hay license, cần đọc code.
 - AISHELL-1 nặng (khoảng 15 GB), cần lưu trên Drive/Kaggle Dataset để khỏi tải lại mỗi phiên.
@@ -46,16 +46,16 @@ Chỉ dùng **CTC-WS** và **CopyNE** để chạy demo và ablation. Điều ki
 
 | # | Hạn | Mục tiêu | Sản phẩm / tiêu chí xong |
 |---|---|---|---|
-| **M0** | 20/10 – 23/10 | Khởi động và kiểm tra khả thi | Tạo folder `report/`, `slides/`, `code/`, `data/`, `video/`. TV1 chạy được tutorial CTC-WS trên Colab; TV2 tải được checkpoint CopyNE và chạy được `evaluate` trên vài câu. **Cuối 23/10 đánh giá tiến độ setup; nếu còn vướng thì ưu tiên gỡ lỗi, không đổi paper** |
+| **M0** | 20/10 – 23/10 | Khởi động và kiểm tra khả thi | Tạo folder `report/`, `slides/`, `code/`, `data/`, `video/`. Cặp TV1+TV3 chạy được tutorial CTC-WS trên Colab; cặp TV2+TV4 tải được checkpoint CopyNE và chạy được `evaluate` trên vài câu. **Cuối 23/10 đánh giá tiến độ setup; nếu còn vướng thì ưu tiên gỡ lỗi, không đổi paper** |
 | **M1** | 24/10 – 27/10 | Đọc paper và dựng môi trường | Mỗi người có ghi chú cho 1-3 paper của group (tóm tắt, ưu/nhược điểm). Demo chạy baseline trên tập test nhỏ. Notebook setup commit vào `code/` kèm hướng dẫn chạy lại |
-| **M2** | 28/10 – 1/11 | Demo hoàn chỉnh; chốt thiết kế ablation | Demo chạy đủ trên tập test, có số liệu baseline và `README` chạy lại được. Nhóm ablation chạy lại setup độc lập để xác nhận. Tài liệu thiết kế ablation (biến số, giá trị, metric) được hai người của cặp thống nhất. Bản nháp report/slide phần group của mỗi người |
+| **M2** | 28/10 – 1/11 | Demo hoàn chỉnh; chốt thiết kế ablation | Demo chạy đủ trên tập test, có số liệu baseline và `README` chạy lại được. Người còn lại trong cặp chạy lại setup độc lập để xác nhận. Tài liệu thiết kế ablation (biến số, giá trị, metric) do hai người của cặp thống nhất. Bản nháp report/slide phần group của mỗi người |
 | **M3** | 2/11 – 8/11 | Chạy ablation | Bảng kết quả ablation cho cả hai paper, lưu notebook và log. Báo cáo ngắn về những điều bất thường |
 | **M4** | 9/11 – 11/11 | Phân tích chuyên sâu (chung) | Chọn 1 giải pháp phân tích sâu, đề xuất cải tiến; ghép các phần vào một report và một bộ slide |
 | **M5** | 12/11 – 13/11 | Video và đóng gói | Video 10-15 phút (thuyết trình + demo); report PDF (có danh sách nhóm và phân công); slide PDF; folder sản phẩm. Một người ngoài phần mình kiểm tra chạy lại code theo hướng dẫn |
 | **Buffer** | 14/11 – 15/11 | Sửa lỗi cuối và nộp | Nộp trước 15/11 |
 
 Ghi chú:
-- Hai nhóm làm lệch nhau: nhóm ablation bắt đầu từ M2 (xác nhận setup), chạy chính ở M3.
+- Trong mỗi cặp: demo xong ở M2, ablation chạy chính ở M3.
 - Mốc M0 là cổng kiểm tra. Nếu đến 23/10 một trong hai paper chưa chạy được, tiếp tục gỡ lỗi sang M1 và thu hẹp phạm vi ablation nếu cần, không thay paper.
 
 ## 4. Gợi ý paper đọc cho từng group
@@ -76,8 +76,8 @@ Tổng cộng có ít nhất 10 paper đủ ngưỡng A/A\*/Q1 nếu mỗi ngư�
 | Tỉ trọng | Tiêu chí | Ai phụ trách | Hoàn thành ở |
 |---|---|---|---|
 | 30% | Khảo sát ≥ 5 paper, tóm tắt, ưu/nhược điểm | TV1-TV4 (mỗi người một group) | M1, M2 (bản nháp), M4 (ghép) |
-| 20% | Chạy demo | TV1 (CTC-WS), TV2 (CopyNE) | M2 |
-| 30% | Ablation study | TV3 (CTC-WS), TV4 (CopyNE) | M3 |
+| 20% | Chạy demo | Cặp TV1+TV3 (CTC-WS), cặp TV2+TV4 (CopyNE) | M2 |
+| 30% | Ablation study | Cặp TV1+TV3 (CTC-WS), cặp TV2+TV4 (CopyNE) | M3 |
 | 20% | Phân tích chuyên sâu 1 giải pháp + đề xuất cải tiến | Cả nhóm | M4 |
 
 ## 6. Cấu trúc folder nộp
