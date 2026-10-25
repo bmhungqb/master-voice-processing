@@ -1,0 +1,159 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{graphicx,booktabs,tabularx,amsmath}
+\usepackage{xcolor}
+\graphicspath{{figures/}}
+
+\usetheme{metropolis}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% Same macros as the report
+\newcommand{\authorrep}[1]{#1\textsuperscript{\textit{AR}}}
+\newcommand{\ours}[1]{#1\textsuperscript{\textit{OUR}}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{Context-aware ASR}
+\subtitle{Survey, Demo and Ablation Study}
+\author{Bùi Mạnh Hùng \and Lâm Minh Quang \and Trần Quang Hưng \and Lê Thanh Long}
+\institute{VNU-HCM, University of Science -- Faculty of IT\\Speech Processing, Master cohort 35\\Supervisors: Assoc.\ Prof.\ Dr.\ Đinh Điền, Dr.\ Châu Thành Đức, Dr.\ Đỗ Đức Hào}
+\date{November 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\begin{frame}{Team and Tasks}
+  \small
+  \begin{tabularx}{\textwidth}{@{}l X X@{}}
+    \toprule
+    \textbf{Member} & \textbf{Report/slides} & \textbf{Technical} \\
+    \midrule
+    Bùi Mạnh Hùng & Introduction + Group A & Demo \\
+    Lâm Minh Quang & Group B & Demo \\
+    Trần Quang Hưng & Group C & Ablation \\
+    Lê Thanh Long & Group D & Ablation \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{4pt}\\ In-depth analysis and proposed improvement: whole team.
+\end{frame}
+
+\section{Introduction}
+\begin{frame}{Context-aware ASR}
+  \begin{itemize}
+    \item \todo{Problem: rare words, proper names, domain terms}
+    \item \todo{Example: reference vs.\ hypothesis}
+    \item \todo{Metric: WER, B-WER, U-WER}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Taxonomy of Approaches}
+  % \includegraphics[width=.8\textwidth]{taxonomy.pdf}
+  \todo{Diagram of groups A--D}
+\end{frame}
+
+\section{Survey of Methods}
+% One slide per paper; comparison slide at the end of the section
+\begin{frame}{Group A: \todo{paper title} (\todo{venue, year})}
+  \begin{columns}[T]
+    \begin{column}{.5\textwidth}
+      \textbf{Main idea}
+      \begin{itemize}\item \todo{}\end{itemize}
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \textbf{Pros / Cons}
+      \begin{itemize}\item[+] \todo{} \item[--] \todo{}\end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Group B: \todo{CLAS / CopyNE}}\todo{}\end{frame}
+\begin{frame}{Group C: \todo{CTC-WS}}\todo{}\end{frame}
+\begin{frame}{Group D: \todo{paper title}}\todo{}\end{frame}
+
+\begin{frame}{Comparison}
+  \small
+  \begin{tabularx}{\textwidth}{@{}l l l X@{}}
+    \toprule
+    \textbf{Paper} & \textbf{Group} & \textbf{Venue/Year} & \textbf{Main pros/cons} \\
+    \midrule
+    \todo{} & & & \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}
+
+\section{Experiments}
+\begin{frame}{Demo: Selected Paper}
+  \begin{itemize}
+    \item \todo{CTC-WS or CopyNE; reason}
+    \item \todo{Setup: Colab/Kaggle T4, data}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Demo: Results}
+  \centering\small
+  \begin{tabular}{@{}l c c c@{}}
+    \toprule
+    & WER/CER & B-WER / NE-CER & U-WER \\
+    \midrule
+    Without biasing & \ours{\todo{}} & \ours{\todo{}} & \ours{\todo{}} \\
+    With biasing    & \ours{\todo{}} & \ours{\todo{}} & \ours{\todo{}} \\
+    Paper         & \authorrep{\todo{}} & \authorrep{\todo{}} & \authorrep{\todo{}} \\
+    \bottomrule
+  \end{tabular}\\[4pt]
+  {\scriptsize AR: author-reported. OUR: our own runs.}
+\end{frame}
+
+\begin{frame}{Demo: Qualitative Examples}\todo{reference / baseline / with biasing}\end{frame}
+
+% Ablation is part of Experiments
+\begin{frame}{Ablation: Design}
+  \small
+  \begin{tabularx}{\textwidth}{@{}l X X@{}}
+    \toprule
+    \textbf{Variable} & \textbf{Values} & \textbf{Metric} \\
+    \midrule
+    \todo{} & \todo{} & \todo{} \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}
+
+\begin{frame}{Ablation: \todo{variable 1}}\todo{table or figure}\end{frame}
+\begin{frame}{Ablation: \todo{variable 2}}\todo{table or figure}\end{frame}
+\begin{frame}{Ablation: Discussion}
+  \begin{itemize}
+    \item \todo{Trade-off B-WER vs U-WER}
+    \item \todo{Unexpected results}
+  \end{itemize}
+\end{frame}
+
+\section{In-depth Analysis}
+\begin{frame}{Analyzed Solution}\todo{mechanism, equations}\end{frame}
+\begin{frame}{Proposed Improvement}\todo{idea, expected gain}\end{frame}
+
+\section{Conclusion}
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item \todo{Contributions}
+    \item \todo{Limitations}
+    \item \todo{Future work}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[standout]Thank you! Questions?\end{frame}
+
+\appendix
+\begin{frame}[allowframebreaks]{References}
+  \footnotesize\nocite{*}
+  \bibliographystyle{unsrt}
+  \bibliography{../report/refs}
+\end{frame}
+
+\end{document}
