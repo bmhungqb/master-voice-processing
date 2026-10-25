@@ -32,9 +32,89 @@ journals of the last 3--5 years.
 \paperbox{CTC-based Word Spotter~\cite{andrusenko2024ctcws}}
   {Interspeech 2024, \todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{candidate for demo/ablation}}
 
-\subsection{Group D: \todo{group name}}
-\paperbox{\todo{Paper title}}
-  {\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}
+\subsection{Group D: Bias Retrieval and Model Adaptation}
+
+\subsubsection{BR-ASR: Efficient and Scalable Bias Retrieval Framework for Contextual Biasing ASR in Speech LLM}
+BR-ASR~\cite{gong2025brasr} was presented by Gong et al.\ at Interspeech 2025 (rank A, pp.~4043--4047) and belongs to
+Group D1 (bias retrieval). The authors do not release code.
+
+\paragraph{Idea.} Putting a long bias list into a speech-LLM prompt does not scale (Prompt-Qwen-Audio already collapses at 500 words, B-WER
+\authorrep{32.1}/\authorrep{39.1}). BR-ASR instead \emph{retrieves first, then decodes}: a contrastive retriever, trained on speech and word vectors in one shared space,
+selects the top-$K$ words for each utterance, and only these go into the prompt (Fig.~\ref{fig:brasr}). What is new:
+\begin{itemize}
+  \item retrieval works directly from audio, using the speech LLM's own frozen encoders;
+  \item a homophone curriculum trains the retriever to tell similar-sounding words apart;
+  \item retrieval is decoupled from the ASR model, so the list can reach 200k words without fine-tuning.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{TV4_D1_BR-ASR_pipeline.png}
+\caption{BR-ASR pipeline~\cite{gong2025brasr} (snowflake: frozen, flame: trainable).
+\textbf{(1) Training:} an utterance $X$ and bias words $B$ (correct words V, random and homophone negatives X) are encoded by frozen
+encoders $E_s$, $E_b$ and pooled by two trainable blocks into one vector $\hat X$ and one vector $\hat b_i$ per word;
+a contrastive loss pulls $\hat X$ toward the correct words and away from the wrong ones, including near-homophones such as
+``andela'' vs.\ ``andella''. \textbf{(2) Decoding:} the full list $B_{\mathrm{total}}$ is encoded once offline into a Bias Vector DB;
+for each utterance, retrieval returns $B_{\mathrm{retrieval}}$, which is given to the contextual SpeechLLM as a text prompt
+together with the speech features $H$ to produce the transcript.}\label{fig:brasr}
+\end{figure}
+
+\paragraph{Main modules.}
+\begin{itemize}
+  \item \textbf{Encoding (speech and bias words into one space).}
+    The speech encoder $E_s$ is the frozen encoder of the speech LLM, and its features $H$ are also passed to the LLM at decoding time.
+    The bias encoder $E_b$ is frozen too: \emph{AcousticBias} synthesizes the word with TTS and encodes it with $E_s$, while \emph{TextualBias} uses the text side of the LLM,
+    which is better because it avoids the mismatch between synthetic and real speech.
+    Two trainable attention-pooling blocks then turn the speech sequence and each word sequence into one vector each.
+  \item \textbf{Training objective (what the retriever learns).}
+    A CLAP-style symmetric contrastive loss with a learnable temperature pulls the speech vector toward the correct words and away from random negatives.
+    A dynamic homophone curriculum adds hard negatives, i.e.\ words whose G2P phoneme sequences are within Levenshtein distance 2 of a correct word,
+    with their share raised on a sigmoid schedule from 1\% to 50\%.
+  \item \textbf{Retrieval and decoding (using the retriever).}
+    The normalized vectors of $B_{\mathrm{total}}$ (up to 200k words) are encoded once and stored in a FAISS inner-product index, which returns the top-$K$ words per utterance.
+    The contextual SpeechLLM receives them in the prompt ``Bias words are: \dots'' and generates the transcript; it is tested with Qwen-Audio and SLAM-ASR.
+\end{itemize}
+
+\paragraph{Contributions.} Each contribution below is linked to the result it improves (Table~\ref{tab:brasr}).
+\begin{enumerate}
+  \item \textbf{Audio-to-word contrastive retrieval.} Candidates are retrieved from the speech itself, using the frozen encoders of the speech LLM, instead of from a CTC hypothesis.
+    This avoids the irrecoverable error of CTC-filter when the correct word is missing from the N-best list, and it replaces a long prompt by a short one.
+    \emph{Effect:} at $N{=}2000$, B-WER on test-clean/other falls from \authorrep{8.4}/\authorrep{18.4} (no bias) to \authorrep{2.8}/\authorrep{7.1},
+    better than the previous best, USTR-CT (\authorrep{3.0}/\authorrep{7.6}), while WER also improves.
+  \item \textbf{Dynamic homophone curriculum.} Hard negatives from near-sounding words are introduced with increasing difficulty on a sigmoid schedule, so the retriever learns to separate words that sound alike.
+    \emph{Effect:} on test-other, homophone confusions in the top-50 fall from \authorrep{91.3\%} to \authorrep{58.4\%}, and B-WER improves from \authorrep{7.9} to \authorrep{7.1}.
+  \item \textbf{Decoupled, plug-and-play retrieval.} Because retrieval is separate from decoding, the ASR model is not retrained, words are added or removed by updating the index,
+    and the same retriever fits several backbones.
+    \emph{Effect:} growing the list from 2k to 200k words raises B-WER only from \authorrep{9.9} to \authorrep{12.8}, at \authorrep{20\,ms} per query on an RTX~4090.
+\end{enumerate}
+
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabularx}{\textwidth}{@{}l X c c@{}}
+\toprule
+\textbf{Contribution} & \textbf{Setting} & \textbf{WER} & \textbf{B-WER} \\
+\midrule
+Baseline & Qwen-Audio, no bias & \authorrep{2.0}/\authorrep{4.2} & \authorrep{8.4}/\authorrep{18.4} \\
+Audio retrieval & Prompt-Qwen-Audio + BR, $N{=}2000$ & \authorrep{1.2}/\authorrep{2.8} & \authorrep{2.8}/\authorrep{7.1} \\
+Prior SOTA & USTR-CT, $N{=}2000$ & \authorrep{2.2}/\authorrep{5.8} & \authorrep{3.0}/\authorrep{7.6} \\
+\midrule
+No curriculum & Textual, attn.\ pooling (other) & \authorrep{3.0} & \authorrep{7.9} \\
+Curriculum & Textual, attn.\ pooling (other) & \authorrep{2.8} & \authorrep{7.1} \\
+\midrule
+Scale & BiasEncoder-Qwen-Audio, 2k $\to$ 200k (other) & -- & \authorrep{9.9}$\to$\authorrep{12.8} \\
+\bottomrule
+\end{tabularx}
+\caption{Key results of BR-ASR on LibriSpeech (test-clean/test-other unless marked; all numbers author-reported). With the curriculum, homophone recall in the top-50 drops from
+\authorrep{91.3\%} to \authorrep{58.4\%} (lower is better). Retrieval over 200k entries takes \authorrep{20\,ms} on an RTX~4090.}\label{tab:brasr}
+\end{table}
+
+\paragraph{Discussion.} BR-ASR scales to very large lists at low latency and improves three different backbones, but it has limits.
+One vector per utterance must be close to several words and loses position information, and the paper does not analyze multi-word sentences.
+Evaluation uses only LibriSpeech with random rare-word distractors, hard negatives come only from the bias list itself, and on SLAM-ASR the gain over
+CTC-filter is small (B-WER \authorrep{4.2}/\authorrep{9.3} vs.\ \authorrep{4.4}/\authorrep{10.0}).
+
+\subsubsection{D2: Model Adaptation}
+\paragraph{Paper title.} \todo{Reference, venue rank, code link} \todo{Main idea, method, key results, strengths, weaknesses}
 
 \subsection{Comparison}
 \begin{table}[h]
