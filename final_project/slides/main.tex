@@ -76,7 +76,22 @@
 
 \begin{frame}{Group B: \todo{CLAS / CopyNE}}\todo{}\end{frame}
 \begin{frame}{Group C: \todo{CTC-WS}}\todo{}\end{frame}
-\begin{frame}{Group D: \todo{paper title}}\todo{}\end{frame}
+\begin{frame}{Group D1: BR-ASR (Interspeech 2025)}
+  \centering
+  \includegraphics[width=\textwidth]{TV4_D1_BR-ASR_pipeline.png}\\[4pt]
+  \begin{minipage}{.9\textwidth}
+    \footnotesize
+    \textbf{Inference flow.} The whole bias list $B_{\mathrm{total}}$ is encoded once offline into a Bias Vector DB.
+    For each utterance: (1) the speech $X$ is encoded and pooled into $\hat X$; (2) FAISS retrieves the top-$K$ closest bias words, $B_{\mathrm{retrieval}}$;
+    (3) these words and the speech features $H$ are given to the contextual SpeechLLM as a prompt (``Bias words are: \dots''); (4) the SpeechLLM outputs the transcript with the rare words.
+  \end{minipage}\\[6pt]
+  \begin{minipage}{.9\textwidth}
+    \footnotesize
+    \textbf{Novelty:} contrastive audio--word retrieval, homophone curriculum, plug-and-play index (200k words, 20\,ms).
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{Group D2: \todo{paper title}}\todo{}\end{frame}
 
 \begin{frame}{Comparison}
   \small
