@@ -1,0 +1,30 @@
+% Shared preamble for the report. Build: latexmk -pdf main.tex
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{graphicx,booktabs,tabularx,array,multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption,subcaption}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+
+\graphicspath{{figures/}}
+\setlist{itemsep=2pt,topsep=3pt}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single}
+
+% ---- Shared macros ----
+% Team members (see plan_tasks.md for the assignment)
+\newcommand{\TVa}{Bùi Mạnh Hùng}
+\newcommand{\TVb}{Lâm Minh Quang}
+\newcommand{\TVc}{Trần Quang Hưng}
+\newcommand{\TVd}{Lê Thanh Long}
+
+% Numbers quoted from papers must be marked; never mix with our own runs
+\newcommand{\authorrep}[1]{#1\textsuperscript{\textit{AR}}}   % author-reported
+\newcommand{\ours}[1]{#1\textsuperscript{\textit{OUR}}}       % nhóm tự chạy
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}

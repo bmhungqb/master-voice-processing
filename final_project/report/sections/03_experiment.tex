@@ -1,0 +1,71 @@
+\section{Experiments}
+
+\subsection{Selected paper}
+\todo{Results of the M0 feasibility check for CTC-WS and CopyNE; reason for the choice.}
+
+\subsection{Experimental setup}
+\begin{itemize}
+  \item Platform: \todo{Colab / Kaggle, T4 GPU}
+  \item Library versions, seed: \todo{}
+  \item Data: \todo{LibriSpeech test + rare-word list / AISHELL-1 + NE dictionary}
+  \item Metrics: \todo{WER, B-WER/U-WER, precision/recall/F1, false alarm / CER, NE-CER}
+  \item Code: \texttt{code/\todo{ctc\_ws|copyne}/}
+\end{itemize}
+
+\subsection{Demo}
+\subsubsection{Baseline results}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}l c c c@{}}
+\toprule
+\textbf{Configuration} & \textbf{WER/CER} & \textbf{B-WER / NE-CER} & \textbf{U-WER} \\
+\midrule
+Without biasing (ours) & \ours{\todo{}} & \ours{\todo{}} & \ours{\todo{}} \\
+With biasing (ours)    & \ours{\todo{}} & \ours{\todo{}} & \ours{\todo{}} \\
+With biasing (paper)   & \authorrep{\todo{}} & \authorrep{\todo{}} & \authorrep{\todo{}} \\
+\bottomrule
+\end{tabular}
+\caption{Demo results. AR: author-reported, OUR: our own runs.}\label{tab:demo}
+\end{table}
+
+\subsubsection{Qualitative examples}
+\todo{Reference / baseline / biased hypothesis for a few utterances.}
+
+\subsubsection{Reproduction issues}
+\todo{Environment problems, differences from the numbers in the paper.}
+
+\subsection{Ablation study}
+\subsubsection{Design}
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{@{}l X X X@{}}
+\toprule
+\textbf{Variable} & \textbf{Values} & \textbf{Fixed} & \textbf{Metric} \\
+\midrule
+\todo{context\_score / beam\_threshold / ...} & \todo{} & \todo{} & \todo{} \\
+\todo{Bias list size (100/500/1000 distractors)} & \todo{} & \todo{} & \todo{} \\
+\todo{Biasing component on/off} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabularx}
+\caption{Ablation design (agreed between both pairs at M2).}
+\end{table}
+
+\subsubsection{Results}
+% One table/figure per variable. State seed and number of runs.
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}l c c c c@{}}
+\toprule
+\textbf{Value} & \textbf{WER} & \textbf{B-WER} & \textbf{U-WER} & \textbf{False alarm} \\
+\midrule
+\todo{} & \ours{} & \ours{} & \ours{} & \ours{} \\
+\bottomrule
+\end{tabular}
+\caption{\todo{Ablation over variable X.}}
+\end{table}
+
+\subsubsection{Discussion}
+\todo{Trends, B-WER vs.\ U-WER trade-off, unexpected results.}
+
+\subsubsection{Limitations}
+\todo{Inference only, no retraining; data subset; number of seeds.}
