@@ -32,19 +32,24 @@ journals of the last 3--5 years.
 \paperbox{CTC-based Word Spotter~\cite{andrusenko2024ctcws}}
   {Interspeech 2024, \todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{}}{\todo{candidate for demo/ablation}}
 
-\subsection{Group D: Bias Retrieval and Model Adaptation}
+\subsection{Group D: Bias Retrieval}
 
 \subsubsection{BR-ASR: Efficient and Scalable Bias Retrieval Framework for Contextual Biasing ASR in Speech LLM}
 BR-ASR~\cite{gong2025brasr} was presented by Gong et al.\ at Interspeech 2025 (rank A, pp.~4043--4047) and belongs to
 Group D1 (bias retrieval). The authors do not release code.
 
-\paragraph{Idea.} Putting a long bias list into a speech-LLM prompt does not scale (Prompt-Qwen-Audio already collapses at 500 words, B-WER
-\authorrep{32.1}/\authorrep{39.1}). BR-ASR instead \emph{retrieves first, then decodes}: a contrastive retriever, trained on speech and word vectors in one shared space,
-selects the top-$K$ words for each utterance, and only these go into the prompt (Fig.~\ref{fig:brasr}). What is new:
+\paragraph{Problem.} A speech LLM can use a list of rare words (names, product terms) if the list is written in its prompt.
+But a long list does not scale: Prompt-Qwen-Audio already collapses at 500 words (B-WER \authorrep{32.1}/\authorrep{39.1}).
+We need to pick a short list of likely words for each utterance.
+
+\paragraph{Key idea.} BR-ASR \emph{retrieves first, then decodes}. A small retriever listens to the whole utterance, turns it into one vector,
+and finds the bias words whose vectors are closest. Only these top-$K$ words go into the prompt (Fig.~\ref{fig:brasr}).
+The retriever is trained so that speech and words live in one shared space, and it is separate from the speech LLM, so the LLM is never retrained.
+In short, the paper's three novelties are:
 \begin{itemize}
   \item retrieval works directly from audio, using the speech LLM's own frozen encoders;
   \item a homophone curriculum trains the retriever to tell similar-sounding words apart;
-  \item retrieval is decoupled from the ASR model, so the list can reach 200k words without fine-tuning.
+  \item the list can reach 200k words by updating an index, with no fine-tuning.
 \end{itemize}
 
 \begin{figure}[h]
@@ -59,21 +64,25 @@ for each utterance, retrieval returns $B_{\mathrm{retrieval}}$, which is given t
 together with the speech features $H$ to produce the transcript.}\label{fig:brasr}
 \end{figure}
 
-\paragraph{Main modules.}
-\begin{itemize}
-  \item \textbf{Encoding (speech and bias words into one space).}
-    The speech encoder $E_s$ is the frozen encoder of the speech LLM, and its features $H$ are also passed to the LLM at decoding time.
-    The bias encoder $E_b$ is frozen too: \emph{AcousticBias} synthesizes the word with TTS and encodes it with $E_s$, while \emph{TextualBias} uses the text side of the LLM,
-    which is better because it avoids the mismatch between synthetic and real speech.
-    Two trainable attention-pooling blocks then turn the speech sequence and each word sequence into one vector each.
-  \item \textbf{Training objective (what the retriever learns).}
-    A CLAP-style symmetric contrastive loss with a learnable temperature pulls the speech vector toward the correct words and away from random negatives.
-    A dynamic homophone curriculum adds hard negatives, i.e.\ words whose G2P phoneme sequences are within Levenshtein distance 2 of a correct word,
-    with their share raised on a sigmoid schedule from 1\% to 50\%.
-  \item \textbf{Retrieval and decoding (using the retriever).}
-    The normalized vectors of $B_{\mathrm{total}}$ (up to 200k words) are encoded once and stored in a FAISS inner-product index, which returns the top-$K$ words per utterance.
-    The contextual SpeechLLM receives them in the prompt ``Bias words are: \dots'' and generates the transcript; it is tested with Qwen-Audio and SLAM-ASR.
-\end{itemize}
+\paragraph{How it works, in three steps.}
+\begin{enumerate}
+  \item \textbf{Train a small retriever (once).}
+    The speech encoder $E_s$ is the frozen encoder of the speech LLM. Each bias word is also encoded by a frozen encoder $E_b$:
+    \emph{AcousticBias} synthesizes the word with TTS and passes it through $E_s$, while \emph{TextualBias} uses the text side of the LLM,
+    which works better because it avoids the gap between synthetic and real speech.
+    Two trainable attention-pooling blocks then turn the speech features into one vector $\hat X$ and each word into one vector $\hat b_i$.
+    A CLAP-style contrastive loss with a learnable temperature pulls $\hat X$ toward the correct words and away from wrong ones.
+    Hard negatives come from a \emph{homophone curriculum}: words whose phoneme sequences (G2P) differ from a correct word by at most 2 edits,
+    mixed in at a share that grows from 1\% to 50\% on a sigmoid schedule, so training goes from easy to hard.
+  \item \textbf{Index the bias list (once per domain).}
+    All words of $B_{\mathrm{total}}$ (up to 200k) are encoded, normalized and stored in a FAISS inner-product index. Changing the list only means updating the index.
+  \item \textbf{Retrieve and decode (for every utterance).}
+    The utterance vector $\hat X$ queries the index and returns the top-$K$ words. The contextual SpeechLLM (Qwen-Audio or SLAM-ASR)
+    receives them in the prompt ``Bias words are: \dots'' together with the speech features $H$, and writes the transcript.
+\end{enumerate}
+
+\paragraph{Why it is different.} Earlier filters such as CTC-filter select words from a first-pass hypothesis, so a word missing from the N-best list can never be recovered.
+BR-ASR searches with the audio itself. Compared with RECAST, it uses one vector per utterance, which is simple and fast but loses the position of a word.
 
 \paragraph{Contributions.} Each contribution below is linked to the result it improves (Table~\ref{tab:brasr}).
 \begin{enumerate}
@@ -113,8 +122,111 @@ One vector per utterance must be close to several words and loses position infor
 Evaluation uses only LibriSpeech with random rare-word distractors, hard negatives come only from the bias list itself, and on SLAM-ASR the gain over
 CTC-filter is small (B-WER \authorrep{4.2}/\authorrep{9.3} vs.\ \authorrep{4.4}/\authorrep{10.0}).
 
-\subsubsection{D2: Model Adaptation}
-\paragraph{Paper title.} \todo{Reference, venue rank, code link} \todo{Main idea, method, key results, strengths, weaknesses}
+\subsubsection{RECAST: Retrieval-Augmented Contextual ASR via Decoder-State Keyword Spotting}
+RECAST~\cite{mittal2025recast} was presented by Mittal, Sarawagi and Jyothi in Findings of EMNLP 2025 (rank A*, pp.~3780--3793)
+and belongs to Group D1 (bias retrieval). Code: \texttt{github.com/}\allowbreak\texttt{AshishMittal/}\allowbreak\texttt{Recast}.
+
+\paragraph{Problem.} Contextual biasing gives the recognizer a list of rare words (names, places, drug names) that may appear in the audio.
+With thousands of words the list is too long for a prompt, and a long list makes the model worse, not better.
+We therefore need to pick a short list of likely words for each utterance.
+
+\paragraph{Key idea.} RECAST \emph{retrieves first, then decodes}, like BR-ASR, but it asks the question in a different way.
+At every step the Whisper decoder already ``knows'' which part of the audio it is listening to, because of cross-attention.
+RECAST reads this decoder state and uses it as a search query: ``which keyword tokens sound like what I am hearing now?''
+Matching tokens are then joined back into whole keywords, and the best $\mathcal{K}$ keywords are put into the Whisper prompt (Fig.~\ref{fig:recast}).
+Whisper itself is never changed, and no recording of the keywords is needed.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{TV4_D1_RECASE_pipeline.png}
+\caption{RECAST pipeline~\cite{mittal2025recast} (snowflake: frozen, flame: trainable).
+\textbf{(a) Training:} the keyword encoder $\mathrm{KE}_\phi$ turns the tokens of a keyword into contextual embeddings $z_\ell$, and the audio projector
+$\mathrm{DP}_\phi$ turns the frozen decoder states at the same tokens into $a_\ell$; a contrastive loss aligns each $a_\ell$ with its $z_\ell$.
+\textbf{(b) Indexing:} every keyword in the list is encoded once and its token embeddings are stored in a kNN index.
+\textbf{(c) Inference:} at each decoding step, $a_t$ queries the index; consecutive token matches are chained into keyword spans
+(blue and red paths), and a ranker returns the top-$\mathcal{K}$ keywords.}\label{fig:recast}
+\end{figure}
+
+\paragraph{How it works, in three steps.}
+\begin{enumerate}
+  \item \textbf{Train a small retriever (once, on LibriSpeech only).}
+    Two small networks are added next to the frozen Whisper (6.5M parameters in total):
+    a keyword encoder $\mathrm{KE}_\phi$ (an LSTM that reads the subword tokens of a keyword from left to right)
+    and an audio projector $\mathrm{DP}_\phi$ (a feed-forward layer applied to the decoder state).
+    Both map into the same 512-dimensional space. Training is contrastive: the decoder state at the moment a token is spoken
+    must be close to the text embedding of that token and far from other tokens.
+    The hardest negatives are the same token with a different left context, so the retriever learns to use the preceding tokens, not just the token itself.
+  \item \textbf{Index the keyword list (once per domain).}
+    Every keyword is split into tokens, encoded by $\mathrm{KE}_\phi$, and each token embedding is stored in a kNN index together with
+    the keyword it belongs to and its position in that keyword. No audio and no retraining are needed to change the list.
+  \item \textbf{Retrieve and rank (for every utterance).}
+    While Whisper decodes greedily, each decoder state is projected by $\mathrm{DP}_\phi$ and used to fetch its $\hat{\mathcal{T}}$ nearest token embeddings.
+    A keyword is followed from one step to the next: if its next token appears among the neighbours, the hypothesis moves on; if not, it gets one error
+    (at most $E_{\max}$ are allowed, to absorb tokenization differences). Finished keywords are ranked by their average similarity, boosted for longer keywords
+    (so longer, more informative words win), and keywords from different positions in the utterance are preferred. The top-$\mathcal{K}$ go into the prompt.
+\end{enumerate}
+In words, the training objective rewards the retriever when the decoder state at the moment a token is spoken is closer to that token's text embedding
+than to every other token, including the hard negatives. Keywords for training are taken automatically from the transcripts with KeyBERT.
+
+\paragraph{Why it is different.} BR-ASR compresses the whole utterance into one vector; RECAST keeps one query per decoding step, so it knows \emph{where} a keyword is.
+Phonetic baselines (Soundex, Metaphone) and BM25 match the first-pass \emph{text} of Whisper, so they fail when that text is already wrong;
+RECAST searches with the decoder state instead.
+
+\paragraph{Contributions.} Each contribution is linked to the result it improves (Tables~\ref{tab:recast} and~\ref{tab:recast-abl}).
+\begin{enumerate}
+  \item \textbf{Decoder-state contrastive retriever.} Audio and text tokens are aligned in a shared space using the ASR decoder itself, with no keyword audio and no change to the backbone.
+    \emph{Effect:} with $\hat{\mathcal{T}}{=}20$ it beats Soundex, Metaphone, Double Metaphone, NYSIIS and BM25, as well as WFST rescoring and PRISM;
+    on Location (small), Recall@50 is \authorrep{82.5} against \authorrep{75.0} for Double Metaphone, and E-WER is \authorrep{17.2} against \authorrep{20.3}.
+  \item \textbf{Token-level tracking and ranking.} Matching subword tokens and chaining them into spans tolerates tokenization mismatches, and the length-scaled, position-diverse ranker selects the shortlist.
+    \emph{Effect:} scaled distance plus positional diversity lowers E-WER on Location (small) from \authorrep{18.6} to \authorrep{17.2} (Table~\ref{tab:recast-abl}).
+  \item \textbf{Generalization across domains, models and languages.} The retriever is trained only on LibriSpeech, yet works on four out-of-domain sets with up to 4{,}000 keywords,
+    on Hindi, and with Phi-4 and GPT-4o-mini.
+    \emph{Effect:} the real-time factor stays between \authorrep{0.013} and \authorrep{0.015} from 1k to over 4k keywords.
+\end{enumerate}
+
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabularx}{\textwidth}{@{}l X c c@{}}
+\toprule
+\textbf{Row} & \textbf{Setting} & \textbf{Recall@50} & \textbf{WER / E-WER} \\
+\midrule
+Baseline & Whisper large-v2, Location (small) & \authorrep{53.7} & \authorrep{19.6}/\authorrep{37.7} \\
+Phonetic & Double Metaphone, Location (small) & \authorrep{75.0} & \authorrep{12.9}/\authorrep{20.3} \\
+Retriever & RECAST $\hat{\mathcal{T}}{=}20$, Location (small) & \textbf{\authorrep{82.5}} & \textbf{\authorrep{11.5}/\authorrep{17.2}} \\
+\midrule
+Baseline & Whisper large-v2, Drugs & \authorrep{16.1} & \authorrep{16.5}/\authorrep{74.8} \\
+Retriever & RECAST $\hat{\mathcal{T}}{=}20$, Drugs & \authorrep{55.3} & \authorrep{12.3}/\authorrep{49.6} \\
+\midrule
+Baseline & Whisper, LibriSpeech test-other, 1k distractors & \authorrep{79.5} & \authorrep{6.7}/\authorrep{10.6} \\
+Retriever & RECAST $\hat{\mathcal{T}}{=}20$, test-other & \authorrep{88.0} & \authorrep{5.4}/\authorrep{7.8} \\
+\bottomrule
+\end{tabularx}
+\caption{Key results of RECAST (all numbers author-reported). Location and Drugs belong to the entity-rich PRISM benchmark;
+the downstream model is Whisper large-v2 with the retrieved keywords in the prompt.}\label{tab:recast}
+\end{table}
+
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabularx}{\textwidth}{@{}l X c c@{}}
+\toprule
+\textbf{Ablation} & \textbf{Variant} & \textbf{Location (small) E-WER} & \textbf{Drugs Recall@50} \\
+\midrule
+Ranker & average distance & \authorrep{18.6} & -- \\
+Ranker & scaled distance + positional diversity & \textbf{\authorrep{17.2}} & -- \\
+\midrule
+Hard negatives & $\mathcal{N}{=}0$ & \authorrep{18.3} & \authorrep{40.20} \\
+Hard negatives & $\mathcal{N}{=}10$ & \textbf{\authorrep{17.2}} & \textbf{\authorrep{55.34}} \\
+\bottomrule
+\end{tabularx}
+\caption{Ablations of RECAST (author-reported). Hard negatives matter most on Drugs, where phonetically similar distractors are common.}\label{tab:recast-abl}
+\end{table}
+
+\paragraph{Discussion.} RECAST scales to thousands of keywords at near-constant latency, needs no keyword audio, and transfers to Hindi, where
+phonetic baselines do not apply (E-WER falls by \authorrep{12.7\%} at $E_{\max}{=}2$ and \authorrep{19.5\%} at $E_{\max}{=}3$). Selecting a short list also protects LLMs:
+Phi-4 with $\mathcal{K}{=}50$ hallucinates and raises WER, whereas $\mathcal{K}{=}10$ helps.
+The authors list three limits: it needs an encoder--decoder ASR model (CTC and RNN-T have no comparable decoder states),
+it is a two-pass pipeline, and it is tested only up to 4k keywords.
+In addition, on the Names set it only matches the best phonetic baseline in recall, and Vietnamese is not evaluated, so its subword tokenization may behave differently, as the authors observe for Hindi.
 
 \subsection{Comparison}
 \begin{table}[h]
