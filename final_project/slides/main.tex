@@ -76,22 +76,27 @@
 
 \begin{frame}{Group B: \todo{CLAS / CopyNE}}\todo{}\end{frame}
 \begin{frame}{Group C: \todo{CTC-WS}}\todo{}\end{frame}
-\begin{frame}{Group D1: BR-ASR (Interspeech 2025)}
+\begin{frame}{Group D1: BR-ASR (Interspeech 2025, A)}
   \centering
-  \includegraphics[width=\textwidth]{TV4_D1_BR-ASR_pipeline.png}\\[4pt]
-  \begin{minipage}{.9\textwidth}
+  \includegraphics[width=.66\textwidth]{TV4_D1_BR-ASR_pipeline.png}\\[2pt]
+  \begin{minipage}{.95\textwidth}
     \footnotesize
-    \textbf{Inference flow.} The whole bias list $B_{\mathrm{total}}$ is encoded once offline into a Bias Vector DB.
-    For each utterance: (1) the speech $X$ is encoded and pooled into $\hat X$; (2) FAISS retrieves the top-$K$ closest bias words, $B_{\mathrm{retrieval}}$;
-    (3) these words and the speech features $H$ are given to the contextual SpeechLLM as a prompt (``Bias words are: \dots''); (4) the SpeechLLM outputs the transcript with the rare words.
-  \end{minipage}\\[6pt]
-  \begin{minipage}{.9\textwidth}
-    \footnotesize
-    \textbf{Novelty:} contrastive audio--word retrieval, homophone curriculum, plug-and-play index (200k words, 20\,ms).
+    \textbf{Idea.} Retrieve first, then decode: a contrastive retriever picks the top-$K$ bias words from the speech itself, and only these go into the SpeechLLM prompt.\\
+    \textbf{Flow.} (1) Train: speech and bias-word vectors in one space, homophone hard negatives; (2) encode the full list once into a FAISS index (up to 200k words);
+    (3) per utterance, retrieve the top-$K$ words; (4) the SpeechLLM decodes with ``Bias words are: \dots''.
   \end{minipage}
 \end{frame}
 
-\begin{frame}{Group D2: \todo{paper title}}\todo{}\end{frame}
+\begin{frame}{Group D1: RECAST (EMNLP Findings 2025, A*)}
+  \centering
+  \includegraphics[width=.66\textwidth]{TV4_D1_RECASE_pipeline.png}\\[2pt]
+  \begin{minipage}{.95\textwidth}
+    \footnotesize
+    \textbf{Idea.} Use the decoder state of a frozen Whisper as the query to retrieve keywords; only the top-$\mathcal{K}$ go into the prompt.\\
+    \textbf{Flow.} (a) contrastive training of $\mathrm{KE}_\phi$, $\mathrm{DP}_\phi$ (6.5M params); (b) keyword tokens indexed once;
+    (c) per step kNN search, token matches chained into keyword spans, then ranked.
+  \end{minipage}
+\end{frame}
 
 \begin{frame}{Comparison}
   \small
