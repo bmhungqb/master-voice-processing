@@ -1,7 +1,18 @@
-\section{Experiments}
+\section{Experiments}\label{sec:exp}
 
 \subsection{Selected paper}
-\todo{Results of the M0 feasibility check for CTC-WS and CopyNE; reason for the choice.}
+We use CopyNE~\cite{lin2024copyne} (Group B1, ACL 2024, rank A*) for the demo and the ablation study.
+The other candidate was the CTC-based word spotter~\cite{andrusenko2024ctcws} (Group C). In favour of CopyNE:
+\begin{itemize}
+  \item The authors release code, a checkpoint and the evaluation manifests with annotated entities
+    (\texttt{test-ne}: 2244 utterances, 3082 entities), so the paper's metrics can be recomputed.
+  \item Evaluation is inference only, so it should fit a free T4 GPU (to be confirmed by the first run); training needs 4 GPUs and is not repeated.
+  \item The context is a plain entity dictionary (a JSON file), so ablations on dictionary size and on the copy
+    mechanism need no retraining.
+  \item NE-CER measures errors on the entities directly, which is what context-aware ASR aims to reduce.
+\end{itemize}
+Known limits: the data are Mandarin (AISHELL-1), the upstream repository has no license file, and the paper reports
+that many noisy dictionary entries hurt accuracy. \todo{Outcome of the first GPU run: checkpoint downloaded, smoke test passed or failed.}
 
 \subsection{Experimental setup}
 \begin{itemize}
@@ -9,7 +20,7 @@
   \item Library versions, seed: \todo{}
   \item Data: \todo{LibriSpeech test + rare-word list / AISHELL-1 + NE dictionary}
   \item Metrics: \todo{WER, B-WER/U-WER, precision/recall/F1, false alarm / CER, NE-CER}
-  \item Code: \texttt{code/\todo{ctc\_ws|copyne}/}
+  \item Code: \texttt{code/copyne/}
 \end{itemize}
 
 \subsection{Demo}

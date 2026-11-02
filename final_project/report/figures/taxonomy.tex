@@ -1,0 +1,32 @@
+\documentclass[tikz,border=4pt]{standalone}
+\usetikzlibrary{positioning,fit,backgrounds,arrows.meta}
+\begin{document}
+\begin{tikzpicture}[
+  font=\sffamily\small,
+  node distance=11mm,
+  io/.style={draw,rounded corners=6pt,minimum height=9mm,minimum width=18mm,fill=gray!12,align=center},
+  blk/.style={draw,minimum height=9mm,minimum width=22mm,fill=white,align=center},
+  grp/.style={draw,dashed,rounded corners=3pt,inner sep=4pt},
+  ar/.style={-{Latex[length=2.2mm]},thick},
+  tag/.style={font=\sffamily\bfseries\small}]
+\node[io] (audio) {Audio};
+\node[blk,right=of audio] (enc) {Encoder};
+\node[blk,right=of enc] (dec) {Decoder +\\beam search};
+\node[io,right=of dec] (raw) {Raw text};
+\node[blk,right=of raw] (post) {Post-\\processing};
+\node[io,right=of post] (fin) {Final text};
+\draw[ar] (audio)--(enc); \draw[ar] (enc)--(dec); \draw[ar] (dec)--(raw);
+\draw[ar] (raw)--(post); \draw[ar] (post)--(fin);
+
+\node[grp,blue!60!black,fit=(enc),label={[tag,blue!60!black]above:B In-model}] {};
+\node[grp,blue!60!black,fit=(dec),label={[tag,blue!60!black]above:A Decoding-time}] {};
+\node[grp,blue!60!black,fit=(post),label={[tag,blue!60!black]above:C Post-correction}] {};
+
+\node[blk,below=16mm of dec,xshift=10mm,fill=gray!10,minimum width=44mm] (ret) {D1  Bias retrieval\\[-1pt]{\footnotesize long list $\rightarrow$ few candidates}};
+\node[blk,below=16mm of enc,xshift=-10mm,fill=gray!10,minimum width=40mm] (ad) {D2  Model adaptation\\[-1pt]{\footnotesize fine-tuning, LoRA, test-time}};
+\draw[ar,dashed] (ret.north west)--(dec.south);
+\draw[ar,dashed] (ret.north)--(enc.south east);
+\draw[ar,dashed] (ret.north east)--(post.south);
+\draw[ar,dashed] (ad.north)--(enc.south west);
+\end{tikzpicture}
+\end{document}

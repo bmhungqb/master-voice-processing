@@ -10,3 +10,6 @@
 *.snm
 *.vrb
 *.pdf
+
+# figures are source assets, keep their PDFs
+!figures/*.pdf

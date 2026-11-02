@@ -48,30 +48,79 @@
 \section{Introduction}
 \begin{frame}{Context-aware ASR}
   \begin{itemize}
-    \item \todo{Problem: rare words, proper names, domain terms}
-    \item \todo{Example: reference vs.\ hypothesis}
-    \item \todo{Metric: WER, B-WER, U-WER}
+    \item Plain ASR favours frequent words; names and domain terms are rare in training.
+    \item Context (contact list, terms, slides) is given at run time and changes per user, so no retraining.
+    \item Goal: fewer errors on listed words, \textbf{without} hurting the rest or inserting listed words that were not said.
   \end{itemize}
+  \vspace{4pt}
+  \centering\small
+  \begin{tabular}{@{}l l@{}}
+    \toprule
+    Audio says ``call Siobhan'' & Output \\
+    \midrule
+    Plain ASR & call \textbf{shiv on} \\
+    Context-aware & call \textbf{Siobhan} \\
+    Over-biased (speaker said ``Sean'') & call \textbf{Siobhan} \\
+    \bottomrule
+  \end{tabular}\\[4pt]
+  {\footnotesize Metrics: WER; B-WER / U-WER = WER on words in / not in the list; false-alarm rate.}
 \end{frame}
 
 \begin{frame}{Taxonomy of Approaches}
-  % \includegraphics[width=.8\textwidth]{taxonomy.pdf}
-  \todo{Diagram of groups A--D}
+  \centering
+  \includegraphics[width=\textwidth]{taxonomy.pdf}\\[4pt]
+  \begin{minipage}{.95\textwidth}
+    \small
+    \textbf{A} bonus score in beam search \quad \textbf{B} list as model input (module or LLM prompt)\\
+    \textbf{C} fix errors after recognition \quad \textbf{D1} shrink a long list \quad \textbf{D2} adapt the model
+  \end{minipage}
 \end{frame}
 
 \section{Survey of Methods}
 % One slide per paper; comparison slide at the end of the section
-\begin{frame}{Group A: \todo{paper title} (\todo{venue, year})}
+\begin{frame}{Group A: Shallow-Fusion Biasing (Zhao et al., Interspeech 2019, A)}
   \begin{columns}[T]
     \begin{column}{.5\textwidth}
       \textbf{Main idea}
-      \begin{itemize}\item \todo{}\end{itemize}
+      \begin{itemize}
+        \item Bias list $\rightarrow$ contextual WFST; its score is added during beam search.
+        \item Bias at \textbf{word-piece} level with weight pushing, so a phrase is not pruned from the beam early.
+        \item Activate a phrase only after a context prefix; add proper-noun training data.
+      \end{itemize}
     \end{column}
     \begin{column}{.5\textwidth}
       \textbf{Pros / Cons}
-      \begin{itemize}\item[+] \todo{} \item[--] \todo{}\end{itemize}
+      \begin{itemize}
+        \item[+] No retraining: swap the list at run time.
+        \item[+] Beats a conventional hybrid system on contextual tasks.
+        \item[--] Needs a tuned weight $\lambda$ and context prefixes.
+        \item[--] Matches spelling, not sound.
+      \end{itemize}
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}{Group A: Trie Deep Biasing + Shallow Fusion (Le et al., Interspeech 2021, A)}
+  \begin{columns}[T]
+    \begin{column}{.5\textwidth}
+      \textbf{Main idea}
+      \begin{itemize}
+        \item Streaming RNN-T with three parts: generic WFST shallow fusion, trie-based deep biasing (joiner), biased NN-LM.
+        \item Trie over word pieces gives a binary ``can start / continue a bias word'' vector.
+        \item LibriSpeech B-WER (test-clean, $N{=}100$): \authorrep{14.1} $\rightarrow$ \authorrep{5.7}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \textbf{Pros / Cons}
+      \begin{itemize}
+        \item[+] Gains from each part add up; U-WER nearly unchanged.
+        \item[+] About 200 MB vs.\ 4 GB for a hybrid baseline.
+        \item[--] Deep biasing degrades on lists much longer than in training (400--800 distractors).
+        \item[--] Trie biasing alone is weaker than WFST fusion.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vfill{\scriptsize AR: author-reported.}
 \end{frame}
 
 \begin{frame}{Group B: \todo{CLAS / CopyNE}}\todo{}\end{frame}

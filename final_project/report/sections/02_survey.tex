@@ -1,4 +1,4 @@
-\section{Survey of Methods}
+\section{Survey of Methods}\label{sec:survey}
 
 Each group covers 1--3 papers; in total at least 5 papers from A/A* conferences or Q1/Q2
 journals of the last 3--5 years.
@@ -17,10 +17,75 @@ journals of the last 3--5 years.
   \end{description}
 }
 
-\subsection{Group A: Contextual-aware Decoding}
-\paperbox{\todo{Paper title}~\cite{zhao2019}}
-  {\todo{Authors, venue, year, venue rank (A*/A/Q1/Q2), code link}}
-  {\todo{}}{\todo{}}{\todo{numbers marked with \texttt{\textbackslash authorrep}}}{\todo{}}{\todo{}}{\todo{}}
+\subsection{Group A: Decoding-time Biasing}
+Group A leaves the ASR model unchanged. The bias list is compiled into a fast lookup structure
+(an FST, a trie or an Aho--Corasick tree) and, during beam search, every hypothesis that follows a path in this
+structure receives a bonus score (shallow fusion). The decoding rule is
+\begin{equation}\label{eq:sf}
+  \hat{y} = \arg\max_{y}\; \log P(y\mid x) + \lambda \log P_C(y),
+\end{equation}
+where $x$ is the audio, $y$ the sub-word sequence, $P$ the ASR model, $P_C$ the contextual model built from the bias list
+and $\lambda$ the biasing weight~\cite{zhao2019}. The list can change per utterance, so no retraining is needed.
+We survey two A-ranked Interspeech papers and one recent preprint.
+
+\paperbox{Shallow-Fusion End-to-End Contextual Biasing~\cite{zhao2019}}
+  {Zhao et al.\ (Google), Interspeech 2019, pp.~1418--1422, rank A. No official code known to us.}
+  {End-to-end models keep only a few candidates in the beam and handle proper nouns poorly, so a biasing phrase is often
+   pruned before it can be scored. The paper makes shallow-fusion biasing work for such models and, for the first time
+   according to the authors, beats a strong conventional (hybrid) system on contextual tasks.}
+  {The bias phrases are compiled into a contextual n-gram WFST and composed with a speller FST that maps sub-word units to words;
+   its score is added to the model score as in Eq.~\ref{eq:sf}~\cite{zhao2019}.
+   The key changes are: (i) biasing at the \emph{sub-word} level with weight pushing, so that a phrase gains score
+   from its first piece and is not pruned early from the beam (instead of rewarding it only at the word end);
+   (ii) word-piece units rather than graphemes, which gives sparser matches; (iii) activating a phrase only after
+   a context prefix, to avoid over-biasing; (iv) training with extra proper-noun data, including synthetic TTS utterances.
+   The biasing step itself needs no training.}
+  {Test sets: voice search, songs, contacts (real and TTS) and apps. The abstract reports better results than a conventional
+   state-of-the-art model across these tasks~\cite{zhao2019}. \todo{Add 1--2 key WER numbers from the PDF, wrapped in \texttt{\textbackslash authorrep}; the PDF could not be opened when drafting.}}
+  {Simple and model-agnostic: the list is swapped at run time without retraining.
+   Works with production-scale end-to-end models and established the shallow-fusion recipe used by later work.}
+  {Needs a hand-tuned weight $\lambda$ and, for precision, strong context prefixes such as ``call'' or ``play''~\cite{le2021triebias}.
+   It matches spellings, not sounds, so it cannot recover a name the model never spells close to the target.
+   The paper is from 2019, outside the 3--5 year window; it is included as the milestone of Group A.}
+  {Defines the baseline mechanism of Group A and the over-biasing trade-off that every later group tries to avoid.}
+
+\paperbox{Contextualized Streaming End-to-End ASR with Trie-Based Deep Biasing and Shallow Fusion~\cite{le2021triebias}}
+  {Le et al.\ (Facebook AI), Interspeech 2021, rank A. Public: the evaluation setup (biasing lists) on LibriSpeech,
+   \url{https://github.com/facebookresearch/fbai-speech/tree/master/is21_deep_bias}; no model code is linked in the paper.}
+  {Combine three complementary techniques in one streaming RNN-T system, so that rare long-tail words are recognized
+   without a large model: a generic WFST for shallow fusion, a trie-based deep biasing module, and a neural language model that also sees the biasing list.}
+  {(1) \emph{WFST shallow fusion} applied on word pieces before beam pruning, with dynamic replacement of the bias list and no need for context prefixes.
+   (2) \emph{Trie-based deep biasing}: the list becomes a non-trainable trie over word pieces; at each step it outputs a binary vector
+   telling which word pieces can start or continue a bias word, and this vector is fed into the RNN-T joiner (DB-RNNT).
+   (3) \emph{NNLM contextualization}: the same vector is fed into the neural LM (DB-NNLM, trainable on text only),
+   which is shallow-fused with the RNN-T. The final system uses all three.}
+  {LibriSpeech with an artificial bias list per utterance (all rare reference words plus $N$ distractors, $N\in\{100,500,1000,2000\}$),
+   and in-house video and voice-assistant data. B-WER on test-clean / test-other at $N{=}100$:
+   RNN-T baseline \authorrep{14.1}/\authorrep{30.6}, WFST only \authorrep{9.4}/\authorrep{22.2}, final system \authorrep{5.7}/\authorrep{14.1};
+   at $N{=}2000$ the final system gets \authorrep{7.3}/\authorrep{18.9}.
+   DB-NNLM gives \authorrep{19.5\%} average relative B-WER gain over WFST + DB-RNNT. On in-house data the final system improves
+   over a hybrid baseline by \authorrep{5.4\%}--\authorrep{9.3\%} with a model of about 200~MB instead of 4~GB (8-bit quantized).
+   U-WER stays almost unchanged.}
+  {Streaming; strong, complementary gains; no retraining for a new list; small footprint; releases the biasing-list protocol, which makes B-WER/U-WER comparisons reproducible.}
+  {Deep biasing (DB-RNNT, DB-NNLM) was trained with only 400--800 distractors and degrades on much longer lists;
+   trie-based deep biasing alone is weaker than WFST shallow fusion; the NNLM gain is smaller on in-house data;
+   no model code is linked in the paper. At 5 years old it is at the edge of the 3--5 year window.}
+  {Provides the B-WER/U-WER protocol and the list-size effect that our dictionary-size ablation on CopyNE also probes.}
+
+\paperbox{TurboBias: Universal ASR Context-Biasing powered by GPU-accelerated Phrase-Boosting Tree~\cite{andrusenko2025turbobias}}
+  {Andrusenko et al.\ (NVIDIA), 2025. arXiv preprint (the arXiv comments say ASRU 2025; ASRU is unranked), so it does \emph{not} count toward the survey threshold. Code: NeMo toolkit.}
+  {Shallow-fusion phrase boosting that is fast on GPU and works with CTC, RNN-T and attention encoder--decoder (AED) models alike, even with up to 20K phrases.}
+  {An Aho--Corasick prefix tree is built over the tokenized phrases with backoff (failure) links and a modified weight rule:
+   a non-root arc at depth $d>1$ gets bonus $c_0\beta+\ln d$ (example $c_0{=}1$, $\beta{=}2$) instead of a uniform reward at the final node.
+   The tree is stored as a GPU table (adapted from NGPU-LM) queried over the whole vocabulary,
+   with a Triton kernel so that CUDA graphs can be used. For AED the end-of-sequence score is raised to avoid truncating a phrase.}
+  {FastConformer CTC / RNN-T (114M) / AED (179M) models trained on 24K hours of English; test sets Earnings21, MultiMed and CSTalks.
+   On CSTalks with RNN-T beam search the phrase F-score goes from \authorrep{44.2} to \authorrep{82.9} and WER from \authorrep{12.8} to \authorrep{9.6}.
+   The speed cost is about \authorrep{2--5\%} RTFx. With 20K phrases the F-score is \authorrep{78.4}\% and WER \authorrep{11.42}\%.}
+  {One framework for all major model types; negligible slowdown; scales to thousands of phrases; open source.}
+  {Preprint only. English only, one GPU type and one model scale; beam search is offline;
+   greedy decoding can hurt words outside the list; boosting weights are tuned on development sets.}
+  {Shows how far shallow fusion has been pushed in engineering terms; used as a reference, not as a counted paper.}
 
 \subsection{Group B: Dedicated Biasing Modules}
 \paperbox{\todo{CLAS}~\cite{pundak2018}}
@@ -235,7 +300,8 @@ In addition, on the Names set it only matches the best phonetic baseline in reca
 \toprule
 \textbf{Paper} & \textbf{Group} & \textbf{Venue/Year} & \textbf{Needs training?} & \textbf{Streaming?} & \textbf{Main pros/cons} \\
 \midrule
-\todo{} & & & & & \\
+Zhao et al.~\cite{zhao2019} & A & Interspeech 2019 & No (FST built per list) & \todo{check in PDF} & Simple, model-agnostic; needs tuned $\lambda$ and context prefixes \\
+Le et al.~\cite{le2021triebias} & A & Interspeech 2021 & Deep biasing: yes; WFST: no & Yes & Strong and small, but deep biasing degrades on long lists \\
 \todo{} & & & & & \\
 \bottomrule
 \end{tabularx}
